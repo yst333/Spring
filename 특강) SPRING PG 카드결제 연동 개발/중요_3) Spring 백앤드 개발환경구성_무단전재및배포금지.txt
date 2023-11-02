@@ -1,0 +1,234 @@
+[Oracle11gDB 계정 생성]
+
+1. 윈도우즈키 + r키 = cmd
+
+2. C:\Users\starh>sqlplus system/System1234
+
+SQL*Plus: Release 11.2.0.1.0 Production on 월 1월 10 19:23:38 2022
+
+Copyright (c) 1982, 2010, Oracle.  All rights reserved.
+
+
+다음에 접속됨:
+Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - 64bit Production
+With the Partitioning, OLAP, Data Mining and Real Application Testing options
+
+3. SQL>create user spring_iamport identified by spring_iamport;
+
+4. SQL>grant connect, resource, dba to spring_iamport;
+
+5. SQL>conn spring_iamport/spring_iamport;
+
+6. SQL>show user
+
+7. SQL>create table pay_import(
+	pay_id varchar2(50) not null primary key,
+	import_id varchar2(50),
+	pay_amount int,
+	per_num varchar2(50),
+	per_time date
+);
+
+8. SQL> desc pay_import;
+
+9. SQL>create sequence idx_seq
+     minvalue 1
+     maxvalue 999999
+     start with 1
+     increment by 1
+     cache 20;
+
+10. SQL>select * from user_sequences;
+
+11. SQL>purge recyclebin;  -- select * from tab; 조회 시 휴지통 내용(삭제 내용) 지울때 활용함
+
+12. SQL> commit;
+
+=============================================================================
+
+[Spring Legacy Project 개발환경 세팅]
+
+1. SpringMVC 프로젝트를 다음과 같이 생성합니다.
+
+   1) 프로젝트명 = Spring_OracleDB_IAMPORT
+ 
+   2) top-level package 명 = com.spring.iamport
+
+   3) Eclipse 상단 File 클릭 - New - Spring Legacy Project 클릭 선택
+       - Project name: 필드란에 Spring_OracleDB_IAMPORT 입력하고,
+       중앙에 Templates: 에서 하단에 Spring MVC Project 클릭
+       - Next 버튼 클릭
+       - Enter a topLevelPackage 하단 필드 입력란에
+         com.spring.iamport 입력 - 하단 Finish 버튼 클릭!
+  [중요 : Spring_OracleDB_IAMPORT 프로젝트 생성 후 Web Project Settings의 Context root 설정과
+   Servers의 Modules 설정은 그대로 초기값을 활용하시기 바랍니다. 추후에 / 로 설정 변경할 경우,
+   Spring_OracleDB_IAMPORT 프로젝트에 있는 웹 주소 URL에서 iamport 빼고,
+   소스에서도 웹 주소 URL에서 iamport 제거하시고 '/'로 다시 설정 하시기 바랍니다.
+   http://localhost:9005/iamport/  → http://localhost:9005 ]
+
+=============================================================================
+
+2. pom.xml 파일 안에 다음의 의존성 추가해 줌
+
+[pom.xml 소스 추가 : jstl dependency 밑에 정도에 추가하기 바람]
+
+		~~ 위에 생략 ~~
+
+		<version>1.0.0-BUILD-SNAPSHOT</version>
+		<properties>
+			<!-- 중요 : java 버전은 1.8, spring 버전을 4버전 이상으로 변경해 줌 -->
+			<java-version>1.8</java-version>
+			<org.springframework-version>5.0.7.RELEASE</org.springframework-version>
+			<org.aspectj-version>1.6.10</org.aspectj-version>
+			<org.slf4j-version>1.6.6</org.slf4j-version>
+		</properties>
+
+		~~ 중간 생략 ~~
+
+		<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.5.7</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.ibatis/ibatis-core -->
+		<dependency>
+			<groupId>org.apache.ibatis</groupId>
+			<artifactId>ibatis-core</artifactId>
+			<version>3.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.22</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- @RestController 활용 설정 -->
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.0</version>
+		</dependency>
+
+		~~ 중간 생략 ~~
+
+	<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+
+		~~ 아래 생략 ~~
+
+=============================================================================
+
+3. ojdbc6.jar 파일 삽입(예시)
+
+  C:\app\starh\product\11.2.0\dbhome_1\jdbc\lib 폴더에 있는 
+
+   ojdbc6.jar 파일을 복사함.
+
+4. WebContent 폴더 안에 있는 WEB-INF 폴더 안에 - lib 폴더 안에
+
+   ojdbc6.jar 파일을 넣어줌.
+
+5. Spring_OracleDB_IAMPORT 프로젝트 선택 - 마우스 우클릭 - properties
+
+   - Java Build Path 클릭 - Add Library... 클릭 - Web App Libraries 클릭해서 추가해줌.
+
+6. Spring_OracleDB_IAMPORT 프로젝트 선택 - 마우스 우클릭 - properties
+
+   - Java Build Path 클릭 - Add Library... 클릭 - Server Runtime 클릭해서 추가해줌.
+
+7. Spring_OracleDB_IAMPORT 프로젝트 선택 - 마우스 우클릭 - properties
+
+   - Project Facets - Java 체크 버전 1.8 변경 - 우측 Runtimes 클릭 - Apache Tomcat v9.0 체크
+
+   - Apply - Apply and Close 버튼 클릭
+
+8. Lombok 인식 처리
+
+좌측 상단 Package Explorer - Spring_OracleDB_IAMPORT - Maven Dependencies - lombok-1.18.22.jar 클릭 선택
+
+- Run As - Java Application 실행 - 확인 버튼 클릭 - Specify location.. 버튼 클릭 - STS.exe(또는 eclipse.exe) 선택
+
+- Select 버튼 클릭 - Install/Update 버튼 클릭 - Quit Installer 버튼 클릭 - STS(Eclipse) 재시작!
+
+=============================================================================
+
+9. Mybatis 구성 및 배포 파일 참고 활용
+
+=============================================================================
+
+10. JAVA 및 웹 소스 코딩
+
+1) src\main\webapp\WEB-INF\views 폴더 안에 index.jsp 소스 코딩
+
+2) src\main\webapp\WEB-INF\views 폴더 안에 payment.jsp 소스 코딩
+  
+   [중요] "JavaScript SDK Library 로드하기"를 참고 바랍니다.
+	<!-- https://portone.gitbook.io/docs/sdk/javascript-sdk-old -->
+	<!-- jQuery -->
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+	<!-- iamport.payment.js -->
+	<script type="text/javascript" src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+
+   [중요] 아임포트 웹사이트 "일반결제 연동하기" 소스 코딩 가이드를 참고 바랍니다.
+           <!-- https://github.com/iamport/iamport-manual/blob/master/인증결제/README.md#pc-mobile -->
+
+3) src\main\webapp\WEB-INF\views 폴더 안에 paymentSuccess.jsp 소스 코딩
+
+4) src\main\java\com\spring\iamport 패키지 안에 command 패키지 생성 후 PaymentController.java 소스 코딩
+
+5) src\main\java\com\spring\iamport 패키지 안에 model 패키지 생성 후 PaymentVO.java 소스 코딩
+
+6) src\main\java\com\spring\iamport 패키지 안에 service 패키지 생성 후 PaymentService.java 소스 코딩
+
+7) src\main\java\com\spring\iamport 패키지 안에 command 패키지 생성 후 PaymentController.java 소스 수정 코딩
+
+8) src\main\java\com\spring\iamport 패키지 안에 dao 패키지 생성 후 PaymentDAO.java 소스 코딩
+
+9) src\main\resources 폴더 안에 마이바티스 설정 파일 mybatis-config.xml 소스 코딩
+
+10) src\main\resources\mappings 폴더 안에 마이바티스 매핑 파일 sql-payment.xml 소스 코딩
+
+11) src\main\java\com\spring\iamport 패키지 안에 service 패키지 생성 후 PaymentServiceImpl.java 소스 코딩
+
+
+=============================================================================
+
+11. Spring_OracleDB_IAMPORT 프로젝트 개발 완료 후에 실행 확인은 다음과 같이 진행합니다.
+
+    1) Spring_OracleDB_IAMPORT 프로젝트 선택 - 마우스 우클릭 - Run As - Run On Server 실행
+
+    2) 크롬 웹브라우저 실행 후 다음의 웹주소 입력
+        http://localhost:9005/iamport/
+
+  [처음화면]
+  [결제하기] 텍스트 클릭
+       ↓
+  "결제하기" 버튼 클릭 : 카드 정보 입력해서 결제 테스트 진행함.
+   - KG 이니시스 결제창에서 - 이용약관 "전체동의" - 본인의 테스트 신용카드 선택
+   - 카드 정보 입력 후 "다음" 버튼 클릭 - 이메일 정보 확인 - "결제"버튼 클릭!
+
+12. OracleDB에 생성된 테이블과 게시글 등록된 데이터를 확인해 봅니다.
+
+    SQL> select * from tab;
+
+    SQL> select * from pay_import;
+
+13. 앞서, "11."의 카드 결제 승인 실행 사항에 대해 다음을 체크 바랍니다.
+         KG이니시스 테스트모드의 경우, 실제 출금 되지만 매일 23:00~23:50분 사이
+        자동 취소됩니다.
+    1) 중요 : 결제 취소의 경우, 결제 사항에 대한 취소 처리 사항을
+               결제 카드사 웹과 대조해서 필히! 확인하시기 바랍니다.
+    2) 참고 웹 사이트
+        https://guide.iamport.kr/8f617f32-564d-464e-9850-bf7648c609b0
+
+=================================================================
